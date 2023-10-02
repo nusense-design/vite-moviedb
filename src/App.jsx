@@ -1,35 +1,56 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import React ,{ useState } from 'react'
 import './App.css'
+import Movie from './components/Movie';
+import Header from './components/Header';
+import { AnimatePresence, motion } from "framer-motion";
+
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [popular, setPopular] = useState([])
+  const [filterList, setFilterList] = useState([])
+  const [active, setActive] = useState(0)
+
+  React.useEffect(()=>{
+fetchPopular();
+  },[])
+
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization:
+        "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3ZTBiNTljMjMzNTM1YWUzMWNiN2RjZWMwMWJhMDM2ZCIsInN1YiI6IjVmYzRiMmRiM2EzNDBiMDAzZWUwMTRhNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.uxGhDBUh82zz4wcD5Td_hMosU4-QIM68KSFQEfMjQqE",
+    },
+  };
+
+  const fetchPopular = async()=>{
+    fetch(
+      "https://api.themoviedb.org/3/movie/popular?language=en-US&page=1",
+      options
+    )
+      .then((response) => response.json())
+      .then((response) => {setPopular(response?.results);setFilterList(response?.results);})
+      .catch((err) => console.error(err));
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <motion.div animate className="App">
+      <Header
+        popular={popular}
+        setFilterList={setFilterList}
+        setActive={setActive} 
+        active={active}
+      />
+      <motion.div layout className="popular-movies">
+        <AnimatePresence>
+        {filterList?.map((movie) => (
+          <Movie key={movie?.id} movie={movie} />
+        ))}
+
+        </AnimatePresence>
+      </motion.div>
+    </motion.div>
+  );
 }
 
 export default App
